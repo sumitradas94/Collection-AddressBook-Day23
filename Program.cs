@@ -7,7 +7,6 @@
 
 
             bool choice = true;
-
             AddressBook Adr = new AddressBook();
             Adr.createUser();
 
