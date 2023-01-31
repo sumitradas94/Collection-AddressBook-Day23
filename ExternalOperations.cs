@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CsvHelper;
 using System.Globalization;
+using Newtonsoft.Json;
 
 namespace AddressBook
 {
@@ -132,7 +133,11 @@ namespace AddressBook
             StreamWriter sw = new(FilePath);
             foreach (string[] array in Book.Values)
             {
-                sw.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7}", array[0], array[1], array[2], array[3], array[4], array[5], array[6], array[7]);
+                sw.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7}",
+                    array[0], array[1],
+                    array[2], array[3],
+                    array[4], array[5],
+                    array[6], array[7]);
             }
             sw.Close();
         }
@@ -150,6 +155,70 @@ namespace AddressBook
             while ((line = sr.ReadLine()) != null)
             {
                 data = line.Split(',');
+                record = new Contacts(
+                    data[0], data[1],
+                    data[2], data[3],
+                    data[4], data[5],
+                    data[6], data[7]);
+            }
+            sr.Close();
+        }
+        public void JSONHandler()
+        {
+            int Option = 0;
+            do
+            {
+                string FilePath = Path + FileName + ".json";
+                Console.WriteLine("\n1 to Write to a .json file for {0} Address Book", FileName);
+                Console.WriteLine("2 to Read from a .json file of {0} Address Book", FileName);
+                Console.WriteLine("3 to Delete the .json file for {0} Address Book", FileName);
+                Console.WriteLine("0 to EXIT");
+                Console.Write("Choose an action: ");
+                Option = Convert.ToInt32(Console.ReadLine());
+                switch (Option)
+                {
+                    case 1:
+                        WriteJSON(FilePath);
+                        break;
+                    case 2:
+                        ReadJSON(FilePath);
+                        break;
+                    case 3:
+                        DeleteFile(FilePath);
+                        break;
+                    default:
+                        break;
+                }
+            } while (Option != 0);
+        }
+        public void WriteJSON(string FilePath)
+        {
+            DeleteFile(FilePath);
+
+            StreamWriter sw = new(FilePath);
+            sw.Flush();
+            foreach (string[] array in Book.Values)
+            {
+                string jsonData = JsonConvert.SerializeObject(array);
+                sw.WriteLine(jsonData);
+                Console.WriteLine(jsonData);
+            }
+            sw.Close();
+        }
+        public void ReadJSON(string FilePath)
+        {
+            if (!FileExists(FilePath))
+            {
+                Console.WriteLine("This file does not exist.");
+                return;
+            }
+
+            StreamReader sr = new(FilePath);
+            string[] data = new string[8];
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                data = JsonConvert.DeserializeObject<string[]>(line);
                 record = new Contacts(
                     data[0], data[1],
                     data[2], data[3],
